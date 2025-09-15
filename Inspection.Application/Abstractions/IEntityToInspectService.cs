@@ -1,4 +1,5 @@
 using Inspection.Application.Dto;
+using Inspection.Domain.Enum;
 
 namespace Inspection.Application.Abstractions
 {
@@ -10,6 +11,6 @@ namespace Inspection.Application.Abstractions
         Task<EntityToInspectDto?> UpdateAsync(int id, UpdateEntityToInspectDto updateEntityToInspectDto);
         Task<bool> DeleteAsync(int id);
         Task<bool> ExistsAsync(int id);
-        Task<IEnumerable<string>> GetCategoriesAsync();
+        Task<IEnumerable<EntityCategory>> GetCategoriesAsync();
     }
 }

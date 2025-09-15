@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Inspection.Application.Abstractions;
+using MediatR;
 using Inspection.Application.Dto;
+using Inspection.Application.Features.Entities.Queries;
+using Inspection.Application.Features.Entities.Commands;
 
 namespace Inspection.Controllers
 {
@@ -10,25 +12,22 @@ namespace Inspection.Controllers
     [Authorize]
     public class EntitiesController : ControllerBase
     {
-        private readonly IEntityToInspectService _entityService;
+        private readonly IMediator _mediator;
         private readonly ILogger<EntitiesController> _logger;
 
-        public EntitiesController(IEntityToInspectService entityService, ILogger<EntitiesController> logger)
+        public EntitiesController(IMediator mediator, ILogger<EntitiesController> logger)
         {
-            _entityService = entityService;
+            _mediator = mediator;
             _logger = logger;
         }
 
-        /// <summary>
-        /// Get all entities to inspect
-        /// </summary>
-        /// <returns>List of entities</returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EntityToInspectDto>>> GetAll()
         {
             try
             {
-                var entities = await _entityService.GetAllAsync();
+                var query = new GetAllEntitiesQuery();
+                var entities = await _mediator.Send(query);
                 return Ok(entities);
             }
             catch (Exception ex)
@@ -38,17 +37,13 @@ namespace Inspection.Controllers
             }
         }
 
-        /// <summary>
-        /// Get entity by ID
-        /// </summary>
-        /// <param name="id">Entity ID</param>
-        /// <returns>Entity details</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<EntityToInspectDto>> GetById(int id)
         {
             try
             {
-                var entity = await _entityService.GetByIdAsync(id);
+                var query = new GetEntityByIdQuery(id);
+                var entity = await _mediator.Send(query);
                 if (entity == null)
                 {
                     return NotFound(new { message = "Entity not found" });
@@ -62,16 +57,13 @@ namespace Inspection.Controllers
             }
         }
 
-        /// <summary>
-        /// Get all categories
-        /// </summary>
-        /// <returns>List of categories</returns>
         [HttpGet("categories")]
         public async Task<ActionResult<IEnumerable<string>>> GetCategories()
         {
             try
             {
-                var categories = await _entityService.GetCategoriesAsync();
+                var query = new GetCategoriesQuery();
+                var categories = await _mediator.Send(query);
                 return Ok(categories);
             }
             catch (Exception ex)
@@ -81,18 +73,14 @@ namespace Inspection.Controllers
             }
         }
 
-        /// <summary>
-        /// Create a new entity to inspect
-        /// </summary>
-        /// <param name="createEntityDto">Entity creation data</param>
-        /// <returns>Created entity</returns>
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<EntityToInspectDto>> Create([FromBody] CreateEntityToInspectDto createEntityDto)
         {
             try
             {
-                var entity = await _entityService.CreateAsync(createEntityDto);
+                var command = new CreateEntityCommand(createEntityDto);
+                var entity = await _mediator.Send(command);
                 _logger.LogInformation("Entity created: {Name}", createEntityDto.Name);
                 return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
             }
@@ -103,19 +91,14 @@ namespace Inspection.Controllers
             }
         }
 
-        /// <summary>
-        /// Update an entity to inspect
-        /// </summary>
-        /// <param name="id">Entity ID</param>
-        /// <param name="updateEntityDto">Entity update data</param>
-        /// <returns>Updated entity</returns>
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<EntityToInspectDto>> Update(int id, [FromBody] UpdateEntityToInspectDto updateEntityDto)
         {
             try
             {
-                var entity = await _entityService.UpdateAsync(id, updateEntityDto);
+                var command = new UpdateEntityCommand(id, updateEntityDto);
+                var entity = await _mediator.Send(command);
                 if (entity == null)
                 {
                     return NotFound(new { message = "Entity not found" });
@@ -130,18 +113,14 @@ namespace Inspection.Controllers
             }
         }
 
-        /// <summary>
-        /// Delete an entity to inspect
-        /// </summary>
-        /// <param name="id">Entity ID</param>
-        /// <returns>Success status</returns>
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(int id)
         {
             try
             {
-                var result = await _entityService.DeleteAsync(id);
+                var command = new DeleteEntityCommand(id);
+                var result = await _mediator.Send(command);
                 if (!result)
                 {
                     return NotFound(new { message = "Entity not found" });

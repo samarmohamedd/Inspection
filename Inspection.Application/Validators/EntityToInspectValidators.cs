@@ -1,5 +1,6 @@
 using FluentValidation;
 using Inspection.Application.Dto;
+using Inspection.Domain.Enum;
 
 namespace Inspection.Application.Validators
 {
@@ -16,8 +17,7 @@ namespace Inspection.Application.Validators
                 .MaximumLength(500).WithMessage("Address cannot exceed 500 characters");
 
             RuleFor(x => x.Category)
-                .NotEmpty().WithMessage("Category is required")
-                .MaximumLength(100).WithMessage("Category cannot exceed 100 characters");
+                .IsInEnum().WithMessage("Category must be a valid category");
         }
     }
 
@@ -34,8 +34,7 @@ namespace Inspection.Application.Validators
                 .MaximumLength(500).WithMessage("Address cannot exceed 500 characters");
 
             RuleFor(x => x.Category)
-                .NotEmpty().WithMessage("Category is required")
-                .MaximumLength(100).WithMessage("Category cannot exceed 100 characters");
+                .IsInEnum().WithMessage("Category must be a valid category");
         }
     }
 }

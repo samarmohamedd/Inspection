@@ -8,8 +8,6 @@ namespace Inspection.Domain.Entities
         public string Code { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public ViolationSeverity Severity { get; set; }
-
-        // Navigation properties
         public virtual InspectionVisit InspectionVisit { get; set; } = null!;
     }
 }

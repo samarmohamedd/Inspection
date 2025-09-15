@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Inspection.Application.Abstractions;
+using MediatR;
 using Inspection.Application.Dto;
+using Inspection.Application.Features.Inspectors.Queries;
+using Inspection.Application.Features.Inspectors.Commands;
 
 namespace Inspection.Controllers
 {
@@ -10,26 +12,23 @@ namespace Inspection.Controllers
     [Authorize]
     public class InspectorsController : ControllerBase
     {
-        private readonly IInspectorService _inspectorService;
+        private readonly IMediator _mediator;
         private readonly ILogger<InspectorsController> _logger;
 
-        public InspectorsController(IInspectorService inspectorService, ILogger<InspectorsController> logger)
+        public InspectorsController(IMediator mediator, ILogger<InspectorsController> logger)
         {
-            _inspectorService = inspectorService;
+            _mediator = mediator;
             _logger = logger;
         }
 
-        /// <summary>
-        /// Get all inspectors
-        /// </summary>
-        /// <returns>List of inspectors</returns>
         [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<InspectorDto>>> GetAll()
         {
             try
             {
-                var inspectors = await _inspectorService.GetAllAsync();
+                var query = new GetAllInspectorsQuery();
+                var inspectors = await _mediator.Send(query);
                 return Ok(inspectors);
             }
             catch (Exception ex)
@@ -39,17 +38,13 @@ namespace Inspection.Controllers
             }
         }
 
-        /// <summary>
-        /// Get inspector by ID
-        /// </summary>
-        /// <param name="id">Inspector ID</param>
-        /// <returns>Inspector details</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<InspectorDto>> GetById(int id)
         {
             try
             {
-                var inspector = await _inspectorService.GetByIdAsync(id);
+                var query = new GetInspectorByIdQuery(id);
+                var inspector = await _mediator.Send(query);
                 if (inspector == null)
                 {
                     return NotFound(new { message = "Inspector not found" });
@@ -63,18 +58,14 @@ namespace Inspection.Controllers
             }
         }
 
-        /// <summary>
-        /// Create a new inspector
-        /// </summary>
-        /// <param name="createInspectorDto">Inspector creation data</param>
-        /// <returns>Created inspector</returns>
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<InspectorDto>> Create([FromBody] CreateInspectorDto createInspectorDto)
         {
             try
             {
-                var inspector = await _inspectorService.CreateAsync(createInspectorDto);
+                var command = new CreateInspectorCommand(createInspectorDto);
+                var inspector = await _mediator.Send(command);
                 _logger.LogInformation("Inspector created: {Email}", createInspectorDto.Email);
                 return CreatedAtAction(nameof(GetById), new { id = inspector.Id }, inspector);
             }
@@ -90,19 +81,14 @@ namespace Inspection.Controllers
             }
         }
 
-        /// <summary>
-        /// Update an inspector
-        /// </summary>
-        /// <param name="id">Inspector ID</param>
-        /// <param name="updateInspectorDto">Inspector update data</param>
-        /// <returns>Updated inspector</returns>
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<InspectorDto>> Update(int id, [FromBody] UpdateInspectorDto updateInspectorDto)
         {
             try
             {
-                var inspector = await _inspectorService.UpdateAsync(id, updateInspectorDto);
+                var command = new UpdateInspectorCommand(id, updateInspectorDto);
+                var inspector = await _mediator.Send(command);
                 if (inspector == null)
                 {
                     return NotFound(new { message = "Inspector not found" });
@@ -122,18 +108,14 @@ namespace Inspection.Controllers
             }
         }
 
-        /// <summary>
-        /// Delete an inspector
-        /// </summary>
-        /// <param name="id">Inspector ID</param>
-        /// <returns>Success status</returns>
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(int id)
         {
             try
             {
-                var result = await _inspectorService.DeleteAsync(id);
+                var command = new DeleteInspectorCommand(id);
+                var result = await _mediator.Send(command);
                 if (!result)
                 {
                     return NotFound(new { message = "Inspector not found" });

@@ -4,6 +4,8 @@ using Inspection.Application.Abstractions;
 using Inspection.Application.Dto;
 using Inspection.DataAccessLayer.Repository;
 using Inspection.Domain.Entities;
+using Inspection.Domain.Enum;
+using System.Linq;
 
 namespace Inspection.Application.Services
 {
@@ -89,15 +91,11 @@ namespace Inspection.Application.Services
             return await _unitOfWork.EntitiesToInspect.GetAsQueryable().AnyAsync(x => x.Id == id && x.IsActive);
         }
 
-        public async Task<IEnumerable<string>> GetCategoriesAsync()
+        public Task<IEnumerable<EntityCategory>> GetCategoriesAsync()
         {
-            var categories = await _unitOfWork.EntitiesToInspect.GetAsQueryable()
-                .Where(x => x.IsActive)
-                .Select(x => x.Category)
-                .Distinct()
-                .OrderBy(x => x)
-                .ToListAsync();
-            return categories;
+            // Return all enum values
+            var categories = Enum.GetValues<EntityCategory>().OrderBy(c => c).AsEnumerable();
+            return Task.FromResult(categories);
         }
     }
 }

@@ -52,7 +52,7 @@ namespace Inspection.Application.Dto
         public DateTime? EndDate { get; set; }
         public InspectionStatus? Status { get; set; }
         public int? InspectorId { get; set; }
-        public string? Category { get; set; }
+        public EntityCategory? Category { get; set; }
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 10;
     }

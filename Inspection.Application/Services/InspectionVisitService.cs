@@ -40,8 +40,8 @@ namespace Inspection.Application.Services
             if (filter.InspectorId.HasValue)
                 query = query.Where(x => x.InspectorId == filter.InspectorId.Value);
 
-            if (!string.IsNullOrEmpty(filter.Category))
-                query = query.Where(x => x.EntityToInspect.Category == filter.Category);
+            if (filter.Category.HasValue)
+                query = query.Where(x => x.EntityToInspect.Category == filter.Category.Value);
 
             var totalCount = await query.CountAsync();
 
@@ -170,7 +170,7 @@ namespace Inspection.Application.Services
                 throw new InvalidOperationException("Only planned visits can be deleted");
             }
 
-            _unitOfWork.InspectionVisits.DeleteAsync(visit);
+            await _unitOfWork.InspectionVisits.DeleteAsync(visit);
             await _unitOfWork.SaveChangesAsync();
             return true;
         }

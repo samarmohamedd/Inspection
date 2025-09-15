@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Inspection.Application.Abstractions;
+using MediatR;
 using Inspection.Application.Dto;
+using Inspection.Application.Features.Auth.Commands;
 
 namespace Inspection.Controllers
 {
@@ -8,26 +9,22 @@ namespace Inspection.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthService _authService;
+        private readonly IMediator _mediator;
         private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IAuthService authService, ILogger<AuthController> logger)
+        public AuthController(IMediator mediator, ILogger<AuthController> logger)
         {
-            _authService = authService;
+            _mediator = mediator;
             _logger = logger;
         }
 
-        /// <summary>
-        /// Authenticate user and return JWT token
-        /// </summary>
-        /// <param name="loginDto">Login credentials</param>
-        /// <returns>JWT token and user information</returns>
         [HttpPost("login")]
         public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginDto loginDto)
         {
             try
             {
-                var result = await _authService.LoginAsync(loginDto);
+                var command = new LoginCommand(loginDto);
+                var result = await _mediator.Send(command);
                 _logger.LogInformation("User {Email} logged in successfully", loginDto.Email);
                 return Ok(result);
             }
@@ -43,17 +40,13 @@ namespace Inspection.Controllers
             }
         }
 
-        /// <summary>
-        /// Register a new user (Admin only)
-        /// </summary>
-        /// <param name="createInspectorDto">User registration data</param>
-        /// <returns>Created user information</returns>
         [HttpPost("register")]
         public async Task<ActionResult<InspectorDto>> Register([FromBody] CreateInspectorDto createInspectorDto)
         {
             try
             {
-                var result = await _authService.RegisterAsync(createInspectorDto);
+                var command = new RegisterCommand(createInspectorDto);
+                var result = await _mediator.Send(command);
                 _logger.LogInformation("New user registered: {Email}", createInspectorDto.Email);
                 return CreatedAtAction(nameof(Register), new { id = result.Id }, result);
             }

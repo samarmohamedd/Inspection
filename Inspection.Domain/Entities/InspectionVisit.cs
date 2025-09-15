@@ -11,8 +11,6 @@ namespace Inspection.Domain.Entities
         public int? Score { get; set; } // 0-100
         public string? Notes { get; set; }
         public DateTime? CompletedAt { get; set; }
-
-        // Navigation properties
         public virtual EntityToInspect EntityToInspect { get; set; } = null!;
         public virtual Inspector Inspector { get; set; } = null!;
         public virtual ICollection<Violation> Violations { get; set; } = new List<Violation>();

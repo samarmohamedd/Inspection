@@ -40,6 +40,11 @@ builder.Services.AddScoped<IEntityToInspectService, EntityToInspectService>();
 builder.Services.AddScoped<IInspectionVisitService, InspectionVisitService>();
 builder.Services.AddScoped<IViolationService, ViolationService>();
 
+// Add MediatR
+builder.Services.AddMediatR(cfg => {
+    cfg.RegisterServicesFromAssembly(typeof(Inspection.Application.Features.Auth.Commands.LoginCommand).Assembly);
+});
+
 // Add AutoMapper
 builder.Services.AddAutoMapper(cfg => {
     cfg.AddProfile<MappingProfile>();

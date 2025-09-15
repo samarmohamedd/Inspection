@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Inspection.Domain.Entities;
+using Inspection.Domain.Enum;
 
 namespace Inspection.DataAccessLayer.Configuration
 {
@@ -22,7 +23,7 @@ namespace Inspection.DataAccessLayer.Configuration
 
             builder.Property(x => x.Category)
                 .IsRequired()
-                .HasMaxLength(100);
+                .HasConversion<int>();
 
             builder.Property(x => x.IsActive)
                 .IsRequired()

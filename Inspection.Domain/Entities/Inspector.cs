@@ -10,8 +10,6 @@ namespace Inspection.Domain.Entities
         public UserRole Role { get; set; }
         public string PasswordHash { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
-
-        // Navigation properties
         public virtual ICollection<InspectionVisit> InspectionVisits { get; set; } = new List<InspectionVisit>();
     }
 }
