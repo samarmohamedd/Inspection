@@ -1,40 +1,28 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Inspection.Domain.Entities;
-using Inspection.Domain.Enum;
 
 namespace Inspection.DataAccessLayer.Configuration
 {
-    public class InspectorConfiguration : IEntityTypeConfiguration<Inspector>
+    public class EntityToInspectConfiguration : IEntityTypeConfiguration<EntityToInspect>
     {
-        public void Configure(EntityTypeBuilder<Inspector> builder)
+        public void Configure(EntityTypeBuilder<EntityToInspect> builder)
         {
-            builder.ToTable("Inspectors");
+            builder.ToTable("EntitiesToInspect");
 
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.FullName)
+            builder.Property(x => x.Name)
                 .IsRequired()
                 .HasMaxLength(200);
 
-            builder.Property(x => x.Email)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            builder.HasIndex(x => x.Email)
-                .IsUnique();
-
-            builder.Property(x => x.Phone)
-                .IsRequired()
-                .HasMaxLength(20);
-
-            builder.Property(x => x.Role)
-                .IsRequired()
-                .HasConversion<int>();
-
-            builder.Property(x => x.PasswordHash)
+            builder.Property(x => x.Address)
                 .IsRequired()
                 .HasMaxLength(500);
+
+            builder.Property(x => x.Category)
+                .IsRequired()
+                .HasMaxLength(100);
 
             builder.Property(x => x.IsActive)
                 .IsRequired()
@@ -53,8 +41,8 @@ namespace Inspection.DataAccessLayer.Configuration
 
             // Relationships
             builder.HasMany(x => x.InspectionVisits)
-                .WithOne(x => x.Inspector)
-                .HasForeignKey(x => x.InspectorId)
+                .WithOne(x => x.EntityToInspect)
+                .HasForeignKey(x => x.EntityToInspectId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

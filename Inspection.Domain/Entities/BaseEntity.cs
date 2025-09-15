@@ -1,27 +1,11 @@
-namespace Inspection.Domain.Entities;
-
-/// <summary>
-/// Base entity class that provides common properties for all entities
-/// </summary>
-public abstract class BaseEntity
+namespace Inspection.Domain.Entities
 {
-    /// <summary>
-    /// Unique identifier for the entity
-    /// </summary>
-    public int Id { get; set; }
-    
-    /// <summary>
-    /// Date and time when the entity was created
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-    
-    /// <summary>
-    /// Date and time when the entity was last updated
-    /// </summary>
-    public DateTime UpdatedAt { get; set; }
-    
-    /// <summary>
-    /// Indicates whether the entity is soft deleted
-    /// </summary>
-    public bool IsDeleted { get; set; }
+    public abstract class BaseEntity
+    {
+        public int Id { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? UpdatedBy { get; set; }
+    }
 }
