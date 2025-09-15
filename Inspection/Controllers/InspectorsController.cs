@@ -25,15 +25,23 @@ namespace Inspection.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<InspectorDto>>> GetAll()
         {
+            var currentUser = User.Identity?.Name ?? "Unknown";
+
+
             try
             {
                 var query = new GetAllInspectorsQuery();
                 var inspectors = await _mediator.Send(query);
+
+                _logger.LogInformation("Successfully retrieved {InspectorCount} inspectors for admin {AdminUser} in {ElapsedMs}ms",
+                    inspectors.Count(), currentUser);
+
                 return Ok(inspectors);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving inspectors");
+                _logger.LogError(ex, "Error retrieving inspectors for admin {AdminUser} after {ElapsedMs}ms",
+                    currentUser);
                 return StatusCode(500, new { message = "An error occurred while retrieving inspectors" });
             }
         }
@@ -41,19 +49,28 @@ namespace Inspection.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<InspectorDto>> GetById(int id)
         {
+            var currentUser = User.Identity?.Name ?? "Unknown";
             try
             {
                 var query = new GetInspectorByIdQuery(id);
                 var inspector = await _mediator.Send(query);
+
                 if (inspector == null)
                 {
+                    _logger.LogWarning("Inspector {InspectorId} not found for user {CurrentUser} after {ElapsedMs}ms",
+                        id, currentUser);
                     return NotFound(new { message = "Inspector not found" });
                 }
+
+                _logger.LogInformation("Successfully retrieved inspector {InspectorId} ({InspectorEmail}) for user {CurrentUser} in {ElapsedMs}ms",
+                    id, inspector.Email, currentUser);
+
                 return Ok(inspector);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving inspector {Id}", id);
+                _logger.LogError(ex, "Error retrieving inspector {InspectorId} for user {CurrentUser} after {ElapsedMs}ms",
+                    id, currentUser);
                 return StatusCode(500, new { message = "An error occurred while retrieving the inspector" });
             }
         }

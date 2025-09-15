@@ -25,17 +25,16 @@ namespace Inspection.Controllers
             {
                 var command = new LoginCommand(loginDto);
                 var result = await _mediator.Send(command);
-                _logger.LogInformation("User {Email} logged in successfully", loginDto.Email);
+
+                _logger.LogInformation("User {Email} logged in successfully in {ElapsedMs}ms",
+                    loginDto.Email);
+
                 return Ok(result);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.LogWarning("Failed login attempt for {Email}: {Message}", loginDto.Email, ex.Message);
-                return Unauthorized(new { message = ex.Message });
-            }
+            } 
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during login for {Email}", loginDto.Email);
+                _logger.LogError(ex, "Error during login for {Email} from IP {ClientIP} after {ElapsedMs}ms",
+                    loginDto.Email, HttpContext.Connection.RemoteIpAddress?.ToString());
                 return StatusCode(500, new { message = "An error occurred during login" });
             }
         }
@@ -47,17 +46,16 @@ namespace Inspection.Controllers
             {
                 var command = new RegisterCommand(createInspectorDto);
                 var result = await _mediator.Send(command);
-                _logger.LogInformation("New user registered: {Email}", createInspectorDto.Email);
+
+                _logger.LogInformation("New user registered successfully: {Email} with ID {UserId} and role {Role} in {ElapsedMs}ms",
+                    createInspectorDto.Email, result.Id, createInspectorDto.Role);
+
                 return CreatedAtAction(nameof(Register), new { id = result.Id }, result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning("Registration failed for {Email}: {Message}", createInspectorDto.Email, ex.Message);
-                return BadRequest(new { message = ex.Message });
-            }
+            } 
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during registration for {Email}", createInspectorDto.Email);
+                _logger.LogError(ex, "Error during registration for {Email} with role {Role} after {ElapsedMs}ms",
+                    createInspectorDto.Email, createInspectorDto.Role);
                 return StatusCode(500, new { message = "An error occurred during registration" });
             }
         }
