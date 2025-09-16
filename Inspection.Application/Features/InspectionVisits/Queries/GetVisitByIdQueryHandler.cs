@@ -21,7 +21,7 @@ namespace Inspection.Application.Features.InspectionVisits.Queries
         {
             var visit = await _unitOfWork.InspectionVisits.GetAsQueryable()
                 .Include(v => v.EntityToInspect)
-                .Include(v => v.Inspector)
+                .Include(v => v.Inspector.User)
                 .Include(v => v.Violations)
                 .FirstOrDefaultAsync(v => v.Id == request.Id, cancellationToken);
 
