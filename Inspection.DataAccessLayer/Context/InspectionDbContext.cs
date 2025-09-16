@@ -20,7 +20,6 @@ namespace Inspection.DataAccessLayer.Context
         {
             base.OnModelCreating(modelBuilder);
 
-            // Apply configurations
             modelBuilder.ApplyConfiguration(new ApplicationUserConfiguration());
             modelBuilder.ApplyConfiguration(new ApplicationRoleConfiguration());
             modelBuilder.ApplyConfiguration(new InspectorConfiguration());

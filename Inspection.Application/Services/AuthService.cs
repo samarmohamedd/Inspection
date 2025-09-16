@@ -65,14 +65,12 @@ namespace Inspection.Application.Services
                     throw new UnauthorizedAccessException("Account is deactivated. Please contact administrator.");
                 }
 
-                // Get user roles from Identity system
                 var userRoles = await _userManager.GetRolesAsync(user);
                 if (userRoles == null || !userRoles.Any())
                 {
                     throw new UnauthorizedAccessException("User has no assigned role. Please contact administrator.");
                 }
 
-                // Get the first role (assuming single role per user, modify if multiple roles needed)
                 var roleName = userRoles.First();
                 var role = await _roleManager.FindByNameAsync(roleName);
                 if (role == null)
@@ -80,7 +78,6 @@ namespace Inspection.Application.Services
                     throw new UnauthorizedAccessException("User role not found. Please contact administrator.");
                 }
 
-                // Map user to UserDto and include role information
                 var userDto = _mapper.Map<UserDto>(user);
                 userDto.UserId = user.Id;
                 userDto.RoleId = role.Id;
@@ -96,7 +93,6 @@ namespace Inspection.Application.Services
             }
             catch (UnauthorizedAccessException)
             {
-                // Re-throw authorization exceptions as-is
                 throw;
             }
             catch (Exception ex)
@@ -109,21 +105,18 @@ namespace Inspection.Application.Services
         {
             try
             {
-                // Check if user already exists
                 var existingUser = await _userManager.FindByEmailAsync(createUserDto.Email);
                 if (existingUser != null)
                 {
                     throw new InvalidOperationException("An account with this email address already exists.");
                 }
 
-                // Validate role exists
                 var role = await _roleManager.FindByIdAsync(createUserDto.RoleId);
                 if (role == null)
                 {
                     throw new InvalidOperationException("Invalid role specified. Please select a valid role.");
                 }
 
-                // Create ApplicationUser
                 var user = new ApplicationUser
                 {
                     UserName = createUserDto.Email,
@@ -141,16 +134,12 @@ namespace Inspection.Application.Services
                     throw new InvalidOperationException($"Registration failed: {errors}");
                 }
 
-                // Assign role
                 await _userManager.AddToRoleAsync(user, role.Name!);
 
-                // Create UserDto for response
                 var userDto = _mapper.Map<UserDto>(user);
                 userDto.UserId = user.Id;
                 userDto.RoleId = role.Id;
                 userDto.RoleName = role.Name ?? string.Empty;
-
-                // If role is Inspector, create Inspector record
                 if (RoleConstants.IsInspectorRole(role.Name))
                 {
                     var inspector = new Inspector
@@ -168,7 +157,6 @@ namespace Inspection.Application.Services
             }
             catch (InvalidOperationException)
             {
-                // Re-throw business logic exceptions as-is
                 throw;
             }
             catch (Exception ex)

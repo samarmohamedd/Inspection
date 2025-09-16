@@ -14,7 +14,7 @@ namespace Inspection.DataAccessLayer.Configuration
 
             builder.Property(x => x.UserId)
                 .IsRequired()
-                .HasMaxLength(450); // Standard length for Identity UserId
+                .HasMaxLength(450);
 
             builder.HasIndex(x => x.UserId)
                 .IsUnique();
@@ -35,7 +35,6 @@ namespace Inspection.DataAccessLayer.Configuration
             builder.Property(x => x.UpdatedBy)
                 .HasMaxLength(100);
 
-            // Relationships
             builder.HasOne(x => x.User)
                 .WithOne(x => x.Inspector)
                 .HasForeignKey<Inspector>(x => x.UserId)

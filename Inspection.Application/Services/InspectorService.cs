@@ -34,7 +34,6 @@ namespace Inspection.Application.Services
 
             var inspectorDtos = _mapper.Map<IEnumerable<InspectorDto>>(inspectors);
 
-            // Populate role information for each inspector
             var result = new List<InspectorDto>();
             foreach (var dto in inspectorDtos)
             {
@@ -76,21 +75,18 @@ namespace Inspection.Application.Services
         {
             try
             {
-                // Check if user already exists
                 var existingUser = await _userManager.FindByEmailAsync(createInspectorDto.Email);
                 if (existingUser != null)
                 {
                     throw new InvalidOperationException("An account with this email address already exists.");
                 }
 
-                // Always use Inspector role - find by name using constant
                 var role = await _roleManager.FindByNameAsync(RoleConstants.Names.Inspector);
                 if (role == null)
                 {
                     throw new InvalidOperationException("Inspector role not found in the system. Please contact administrator.");
                 }
 
-                // Create ApplicationUser entity
                 var user = new ApplicationUser
                 {
                     UserName = createInspectorDto.Email,
@@ -101,31 +97,25 @@ namespace Inspection.Application.Services
                     CreatedAt = DateTime.UtcNow
                 };
 
-                // Create user through UserManager
                 var userResult = await _userManager.CreateAsync(user, createInspectorDto.Password);
                 if (!userResult.Succeeded)
                 {
                     throw new InvalidOperationException($"Failed to create user: {string.Join(", ", userResult.Errors.Select(e => e.Description))}");
                 }
 
-                // Assign role to user
                 await _userManager.AddToRoleAsync(user, role.Name!);
 
-                // Create Inspector entity with the User's ID
                 var inspector = new Inspector
                 {
-                    UserId = user.Id, // Use the ID from the created user
+                    UserId = user.Id,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 };
-
-                // Add Inspector entity to database
                 await _unitOfWork.Inspectors.AddAsync(inspector);
                 await _unitOfWork.SaveChangesAsync();
             }
             catch (InvalidOperationException)
             {
-                // Re-throw business logic exceptions as-is
                 throw;
             }
             catch (Exception ex)
@@ -144,37 +134,27 @@ namespace Inspection.Application.Services
                 return null;
             }
 
-            // Update Inspector properties
             inspector.IsActive = updateInspectorDto.IsActive;
             inspector.UpdatedAt = DateTime.UtcNow;
 
-            // Update User properties through UserManager
             var user = inspector.User;
             user.FullName = updateInspectorDto.FullName;
             user.Phone = updateInspectorDto.Phone;
             user.UpdatedAt = DateTime.UtcNow;
 
-            // Update email if changed
             if (user.Email != updateInspectorDto.Email)
             {
                 user.Email = updateInspectorDto.Email;
-                user.UserName = updateInspectorDto.Email; // Keep UserName in sync with Email
+                user.UserName = updateInspectorDto.Email;
             }
-
-            // Update user through UserManager
             var userUpdateResult = await _userManager.UpdateAsync(user);
             if (!userUpdateResult.Succeeded)
             {
                 throw new InvalidOperationException($"Failed to update user: {string.Join(", ", userUpdateResult.Errors.Select(e => e.Description))}");
             }
 
-            // Role is always Inspector - no role updates needed
-
-            // Update Inspector entity
             await _unitOfWork.Inspectors.UpdateAsync(inspector);
             await _unitOfWork.SaveChangesAsync();
-
-            // Return updated inspector with populated role information
             return await GetByIdAsync(id);
         }
 
@@ -186,17 +166,14 @@ namespace Inspection.Application.Services
                 return false;
             }
 
-            // Check if inspector has any inspection visits
             var hasVisits = await _unitOfWork.InspectionVisits.GetAsQueryable().AnyAsync(x => x.InspectorId == id);
             if (hasVisits)
             {
-                // Soft delete by deactivating
                 inspector.IsActive = false;
                 await _unitOfWork.Inspectors.UpdateAsync(inspector);
             }
             else
             {
-                // Hard delete if no visits
                 await _unitOfWork.Inspectors.DeleteAsync(inspector);
             }
 

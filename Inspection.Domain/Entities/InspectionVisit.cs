@@ -8,7 +8,7 @@ namespace Inspection.Domain.Entities
         public int InspectorId { get; set; }
         public DateTime ScheduledAt { get; set; }
         public InspectionStatus Status { get; set; } = InspectionStatus.Planned;
-        public int? Score { get; set; } // 0-100
+        public int? Score { get; set; }
         public string? Notes { get; set; }
         public DateTime? CompletedAt { get; set; }
         public virtual EntityToInspect EntityToInspect { get; set; } = null!;

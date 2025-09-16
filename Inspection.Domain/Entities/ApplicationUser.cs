@@ -12,7 +12,6 @@ namespace Inspection.Domain.Entities
         public string? CreatedBy { get; set; }
         public string? UpdatedBy { get; set; }
 
-        // Navigation property to Inspector
         public virtual Inspector? Inspector { get; set; }
 
     }

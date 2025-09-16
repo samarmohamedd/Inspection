@@ -28,7 +28,6 @@ namespace Inspection.Controllers
         {
             try
             {
-                // If user is Inspector, only show their visits
                 var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
                 if (userRole == UserRole.Inspector.ToString())
                 {
@@ -59,7 +58,6 @@ namespace Inspection.Controllers
                     return NotFound(new { message = "Inspection visit not found" });
                 }
 
-                // Check if user has access to this visit
                 var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
                 if (userRole == UserRole.Inspector.ToString())
                 {
@@ -107,7 +105,6 @@ namespace Inspection.Controllers
         {
             try
             {
-                // Check if user has access to this visit
                 var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
                 if (userRole == UserRole.Inspector.ToString())
                 {
@@ -146,7 +143,6 @@ namespace Inspection.Controllers
         {
             try
             {
-                // Check if user has access to this visit
                 var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
                 if (userRole == UserRole.Inspector.ToString())
                 {
@@ -202,7 +198,7 @@ namespace Inspection.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting inspection visit {Id}", id);
+                _logger.LogError(ex, "Error deleting inspection visit {Id}", id); 
                 return StatusCode(500, new { message = "An error occurred while deleting the inspection visit" });
             }
         }

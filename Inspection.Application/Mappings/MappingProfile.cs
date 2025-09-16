@@ -8,8 +8,6 @@ namespace Inspection.Application.Mappings
     {
         public MappingProfile()
         {
-            // User mappings
-
             CreateMap<ApplicationUser,UserDto>()
                 .ForMember(dest => dest.RoleId, opt => opt.Ignore())
                 .ForMember(dest => dest.RoleName, opt => opt.Ignore())
@@ -25,7 +23,7 @@ namespace Inspection.Application.Mappings
                 .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.User.Phone))
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.User.Id))
                 .ReverseMap()
-                .ForMember(dest => dest.User, opt => opt.Ignore()); // User is handled separately
+                .ForMember(dest => dest.User, opt => opt.Ignore());
 
             CreateMap<CreateInspectorDto, Inspector>()
                                                .ReverseMap();
@@ -37,7 +35,6 @@ namespace Inspection.Application.Mappings
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore());
 
-            // EntityToInspect mappings
             CreateMap<EntityToInspect, EntityToInspectDto>();
             CreateMap<CreateEntityToInspectDto, EntityToInspect>();
             CreateMap<UpdateEntityToInspectDto, EntityToInspect>()
@@ -45,7 +42,6 @@ namespace Inspection.Application.Mappings
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore());
 
-            // InspectionVisit mappings
             CreateMap<InspectionVisit, InspectionVisitDto>();
             CreateMap<CreateInspectionVisitDto, InspectionVisit>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Domain.Enum.InspectionStatus.Planned));
@@ -54,7 +50,6 @@ namespace Inspection.Application.Mappings
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore());
 
-            // Violation mappings
             CreateMap<Violation, ViolationDto>();
             CreateMap<CreateViolationDto, Violation>();
             CreateMap<UpdateViolationDto, Violation>()
@@ -63,7 +58,6 @@ namespace Inspection.Application.Mappings
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore());
 
-            // Recent visit mapping
             CreateMap<InspectionVisit, RecentVisitDto>()
                 .ForMember(dest => dest.EntityName, opt => opt.MapFrom(src => src.EntityToInspect.Name))
                 .ForMember(dest => dest.InspectorName, opt => opt.MapFrom(src => src.Inspector.User.FullName));

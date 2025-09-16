@@ -37,16 +37,11 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
         outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] {Message:lj} <s:{SourceContext}> <id:{RequestId}>{NewLine}{Exception}")
 );
 
-// Add services to the container.
-
-// Add Entity Framework
 builder.Services.AddDbContext<InspectionDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add ASP.NET Core Identity
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {
-    // Password settings
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireNonAlphanumeric = false;
@@ -54,43 +49,33 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     options.Password.RequiredLength = 6;
     options.Password.RequiredUniqueChars = 1;
 
-    // Lockout settings
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.AllowedForNewUsers = true;
 
-    // User settings
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
     options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<InspectionDbContext>()
 .AddDefaultTokenProviders();
 
-// Add repositories
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-// Add services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IInspectorService, InspectorService>();
 builder.Services.AddScoped<IEntityToInspectService, EntityToInspectService>();
 builder.Services.AddScoped<IInspectionVisitService, InspectionVisitService>();
 builder.Services.AddScoped<IViolationService, ViolationService>();
-
-// Add MediatR
 builder.Services.AddMediatR(cfg => {
     cfg.RegisterServicesFromAssembly(typeof(Inspection.Application.Features.Auth.Commands.LoginCommand).Assembly);
 });
 
-// Add AutoMapper
 builder.Services.AddAutoMapper(cfg => {
     cfg.AddProfile<MappingProfile>();
 });
 
-// Add FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateInspectorDtoValidator>();
-
-// Add JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var key = Encoding.ASCII.GetBytes(jwtSettings["SecretKey"] ?? "DefaultSecretKeyForDevelopment123456789");
 
@@ -117,8 +102,6 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
-
-// Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp", policy =>
@@ -132,7 +115,6 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 
-// Configure Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -142,8 +124,6 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "Field Inspection Management System API"
     });
-
-    // Add JWT authentication to Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
@@ -171,10 +151,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Add global exception handling middleware
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
-
-// Add Serilog request logging
 app.UseSerilogRequestLogging(options =>
 {
     options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
@@ -195,7 +172,6 @@ app.UseSerilogRequestLogging(options =>
     };
 });
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -213,8 +189,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-// Ensure database is created and seed roles
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<InspectionDbContext>();
@@ -222,7 +196,6 @@ using (var scope = app.Services.CreateScope())
 
     context.Database.EnsureCreated();
 
-    // Seed roles
     await SeedRolesAsync(roleManager);
 }
 
