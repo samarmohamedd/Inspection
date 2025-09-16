@@ -4,7 +4,7 @@ using Inspection.Domain.Enum;
 
 namespace Inspection.Application.Features.Entities.Commands
 {
-    public class CreateEntityCommand : IRequest<EntityToInspectDto>
+    public record CreateEntityCommand : IRequest<EntityToInspectDto>
     {
         public string Name { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;

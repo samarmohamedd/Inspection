@@ -3,7 +3,7 @@ using Inspection.Application.Dto;
 
 namespace Inspection.Application.Features.Inspectors.Commands
 {
-    public class CreateInspectorCommand : IRequest
+    public record CreateInspectorCommand : IRequest
     {
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;

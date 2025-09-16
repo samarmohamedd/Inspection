@@ -3,7 +3,7 @@ using Inspection.Application.Dto;
 
 namespace Inspection.Application.Features.InspectionVisits.Commands
 {
-    public class CompleteVisitCommand : IRequest<InspectionVisitDto?>
+    public record CompleteVisitCommand : IRequest<InspectionVisitDto?>
     {
         public int Id { get; set; }
         public int Score { get; set; }

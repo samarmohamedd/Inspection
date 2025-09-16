@@ -3,7 +3,7 @@ using Inspection.Application.Dto;
 
 namespace Inspection.Application.Features.InspectionVisits.Commands
 {
-    public class CreateVisitCommand : IRequest<InspectionVisitDto>
+    public record CreateVisitCommand : IRequest<InspectionVisitDto>
     {
         public int EntityToInspectId { get; set; }
         public int InspectorId { get; set; }

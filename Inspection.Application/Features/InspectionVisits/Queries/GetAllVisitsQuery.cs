@@ -4,7 +4,7 @@ using Inspection.Domain.Enum;
 
 namespace Inspection.Application.Features.InspectionVisits.Queries
 {
-    public class GetAllVisitsQuery : IRequest<PagedResultDto<InspectionVisitDto>>
+    public record GetAllVisitsQuery : IRequest<PagedResultDto<InspectionVisitDto>>
     {
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }

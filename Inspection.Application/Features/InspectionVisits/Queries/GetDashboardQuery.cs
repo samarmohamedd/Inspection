@@ -3,7 +3,7 @@ using Inspection.Application.Dto;
 
 namespace Inspection.Application.Features.InspectionVisits.Queries
 {
-    public class GetDashboardQuery : IRequest<DashboardDto>
+    public record GetDashboardQuery : IRequest<DashboardDto>
     {
     }
 }

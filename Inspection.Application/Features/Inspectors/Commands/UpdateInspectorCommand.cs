@@ -3,7 +3,7 @@ using Inspection.Application.Dto;
 
 namespace Inspection.Application.Features.Inspectors.Commands
 {
-    public class UpdateInspectorCommand : IRequest<InspectorDto?>
+    public record UpdateInspectorCommand : IRequest<InspectorDto?>
     {
         public int Id { get; set; }
         public string FullName { get; set; } = string.Empty;

@@ -2,7 +2,7 @@ using MediatR;
 
 namespace Inspection.Application.Features.Entities.Commands
 {
-    public class DeleteEntityCommand : IRequest<bool>
+    public record DeleteEntityCommand : IRequest<bool>
     {
         public int Id { get; set; }
 

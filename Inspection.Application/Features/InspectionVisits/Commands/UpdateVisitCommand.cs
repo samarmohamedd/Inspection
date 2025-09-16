@@ -4,7 +4,7 @@ using Inspection.Domain.Enum;
 
 namespace Inspection.Application.Features.InspectionVisits.Commands
 {
-    public class UpdateVisitCommand : IRequest<InspectionVisitDto?>
+    public record UpdateVisitCommand : IRequest<InspectionVisitDto?>
     {
         public int Id { get; set; }
         public int EntityToInspectId { get; set; }

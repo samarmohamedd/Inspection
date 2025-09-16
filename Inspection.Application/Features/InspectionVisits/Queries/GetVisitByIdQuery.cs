@@ -3,7 +3,7 @@ using Inspection.Application.Dto;
 
 namespace Inspection.Application.Features.InspectionVisits.Queries
 {
-    public class GetVisitByIdQuery : IRequest<InspectionVisitDto?>
+    public record GetVisitByIdQuery : IRequest<InspectionVisitDto?>
     {
         public int Id { get; set; }
 

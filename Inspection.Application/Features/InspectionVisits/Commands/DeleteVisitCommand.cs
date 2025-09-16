@@ -2,7 +2,7 @@ using MediatR;
 
 namespace Inspection.Application.Features.InspectionVisits.Commands
 {
-    public class DeleteVisitCommand : IRequest<bool>
+    public record DeleteVisitCommand : IRequest<bool>
     {
         public int Id { get; set; }
 
