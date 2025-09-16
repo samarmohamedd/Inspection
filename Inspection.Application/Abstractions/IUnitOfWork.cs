@@ -9,6 +9,7 @@ namespace Inspection.DataAccessLayer.Repository
         IGenericRepository<InspectionVisit> InspectionVisits { get; }
         IGenericRepository<Violation> Violations { get; }
         IGenericRepository<ApplicationUser> applicationUser { get; }
+        IGenericRepository<ApplicationRole> applicationRole { get; }
         Task<int> SaveChangesAsync();
         int SaveChanges();
         Task BeginTransactionAsync();

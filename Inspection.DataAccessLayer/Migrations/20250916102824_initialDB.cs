@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Inspection.DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialWithRoleId : Migration
+    public partial class initialDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -195,7 +195,6 @@ namespace Inspection.DataAccessLayer.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -205,12 +204,6 @@ namespace Inspection.DataAccessLayer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Inspectors", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Inspectors_AspNetRoles_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "AspNetRoles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Inspectors_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -330,11 +323,6 @@ namespace Inspection.DataAccessLayer.Migrations
                 column: "InspectorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Inspectors_RoleId",
-                table: "Inspectors",
-                column: "RoleId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Inspectors_UserId",
                 table: "Inspectors",
                 column: "UserId",
@@ -368,6 +356,9 @@ namespace Inspection.DataAccessLayer.Migrations
                 name: "Violations");
 
             migrationBuilder.DropTable(
+                name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
                 name: "InspectionVisits");
 
             migrationBuilder.DropTable(
@@ -375,9 +366,6 @@ namespace Inspection.DataAccessLayer.Migrations
 
             migrationBuilder.DropTable(
                 name: "Inspectors");
-
-            migrationBuilder.DropTable(
-                name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

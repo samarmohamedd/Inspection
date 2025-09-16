@@ -24,7 +24,6 @@ namespace Inspection.Application.Services
         {
             var inspectors = await _unitOfWork.Inspectors.GetAsQueryable()
                 .Include(x => x.User)
-                .Include(x => x.Role)
                 .OrderBy(x => x.User.FullName)
                 .ToListAsync();
             return _mapper.Map<IEnumerable<InspectorDto>>(inspectors);
@@ -34,7 +33,6 @@ namespace Inspection.Application.Services
         {
             var inspector = await _unitOfWork.Inspectors.GetAsQueryable()
                 .Include(x => x.User)
-                .Include(x => x.Role)
                 .FirstOrDefaultAsync(x => x.Id == id);
             return inspector != null ? _mapper.Map<InspectorDto>(inspector) : null;
         }
@@ -43,7 +41,6 @@ namespace Inspection.Application.Services
         {
             var inspector = await _unitOfWork.Inspectors.GetAsQueryable()
                 .Include(x => x.User)
-                .Include(x => x.Role)
                 .FirstOrDefaultAsync(x => x.User.Email == email);
             return inspector != null ? _mapper.Map<InspectorDto>(inspector) : null;
         }
@@ -60,7 +57,6 @@ namespace Inspection.Application.Services
         {
             var inspector = await _unitOfWork.Inspectors.GetAsQueryable()
                 .Include(x => x.User)
-                .Include(x => x.Role)
                 .FirstOrDefaultAsync(x => x.Id == id);
             if (inspector == null)
             {
@@ -68,7 +64,6 @@ namespace Inspection.Application.Services
             }
 
             // Update Inspector properties
-            inspector.RoleId = updateInspectorDto.RoleId;
             inspector.IsActive = updateInspectorDto.IsActive;
 
             // Note: User properties (FullName, Email, Phone) should be updated through Identity UserManager

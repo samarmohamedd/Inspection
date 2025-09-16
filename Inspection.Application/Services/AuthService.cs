@@ -11,6 +11,7 @@ using Inspection.Application.Dto;
 using Inspection.DataAccessLayer.Repository;
 using Inspection.Domain.Entities;
 using Inspection.Domain.Enum;
+using Inspection.Domain.Constants;
 
 namespace Inspection.Application.Services
 {
@@ -64,9 +65,27 @@ namespace Inspection.Application.Services
                     throw new UnauthorizedAccessException("Account is deactivated. Please contact administrator.");
                 }
 
-              
+                // Get user roles from Identity system
+                var userRoles = await _userManager.GetRolesAsync(user);
+                if (userRoles == null || !userRoles.Any())
+                {
+                    throw new UnauthorizedAccessException("User has no assigned role. Please contact administrator.");
+                }
 
+                // Get the first role (assuming single role per user, modify if multiple roles needed)
+                var roleName = userRoles.First();
+                var role = await _roleManager.FindByNameAsync(roleName);
+                if (role == null)
+                {
+                    throw new UnauthorizedAccessException("User role not found. Please contact administrator.");
+                }
+
+                // Map user to UserDto and include role information
                 var userDto = _mapper.Map<UserDto>(user);
+                userDto.UserId = user.Id;
+                userDto.RoleId = role.Id;
+                userDto.RoleName = role.Name ?? string.Empty;
+
                 var token = GenerateJwtToken(userDto);
 
                 return new LoginResponseDto
@@ -125,22 +144,27 @@ namespace Inspection.Application.Services
                 // Assign role
                 await _userManager.AddToRoleAsync(user, role.Name!);
 
-                // Create Inspector record
-                var inspector = new Inspector
+                // Create UserDto for response
+                var userDto = _mapper.Map<UserDto>(user);
+                userDto.UserId = user.Id;
+                userDto.RoleId = role.Id;
+                userDto.RoleName = role.Name ?? string.Empty;
+
+                // If role is Inspector, create Inspector record
+                if (RoleConstants.IsInspectorRole(role.Name))
                 {
-                    UserId = user.Id,
-                    RoleId = createUserDto.RoleId,
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow
-                };
+                    var inspector = new Inspector
+                    {
+                        UserId = user.Id,
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
 
-                await _unitOfWork.Inspectors.AddAsync(inspector);
-                await _unitOfWork.SaveChangesAsync();
-
-                // Load the inspector with user and role data for mapping
-                inspector.User = user;
-                inspector.Role = role;
-                return _mapper.Map<UserDto>(inspector);
+                    await _unitOfWork.Inspectors.AddAsync(inspector);
+                    await _unitOfWork.SaveChangesAsync();
+                }
+                 await _unitOfWork.SaveChangesAsync();
+                return userDto;
             }
             catch (InvalidOperationException)
             {
@@ -153,19 +177,17 @@ namespace Inspection.Application.Services
             }
         }
 
-        public string GenerateJwtToken(UserDto inspector)
+        public string GenerateJwtToken(UserDto user)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
             var key = Encoding.ASCII.GetBytes(jwtSettings["SecretKey"] ?? "DefaultSecretKeyForDevelopment123456789");
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, inspector.UserId),
-                new Claim(ClaimTypes.Name, inspector.FullName),
-                new Claim(ClaimTypes.Email, inspector.Email),
-                new Claim(ClaimTypes.Role, inspector.RoleName),
-                new Claim("InspectorId", inspector.Id.ToString()),
-                new Claim("RoleId", inspector.RoleId)
+                new Claim(ClaimTypes.NameIdentifier, user.UserId),
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim("RoleId", user.RoleId)
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

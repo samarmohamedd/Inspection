@@ -4,6 +4,7 @@ using MediatR;
 using Inspection.Application.Dto;
 using Inspection.Application.Features.Entities.Queries;
 using Inspection.Application.Features.Entities.Commands;
+using Inspection.Domain.Constants;
 
 namespace Inspection.Controllers
 {
@@ -74,7 +75,7 @@ namespace Inspection.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = RoleConstants.Names.Admin)]
         public async Task<ActionResult<EntityToInspectDto>> Create([FromBody] CreateEntityToInspectDto createEntityDto)
         {
             try

@@ -10,7 +10,9 @@ namespace Inspection.Application.Mappings
         {
             // User mappings
 
-            CreateMap<UserDto, ApplicationUser>()
+            CreateMap<ApplicationUser,UserDto>()
+                .ForMember(dest => dest.RoleId, opt => opt.Ignore())
+                .ForMember(dest => dest.RoleName, opt => opt.Ignore())
                 .ReverseMap();
             CreateMap<CreateUserDto, ApplicationUser>()
                 .ReverseMap();
@@ -27,7 +29,6 @@ namespace Inspection.Application.Mappings
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.User, opt => opt.Ignore())
-                .ForMember(dest => dest.Role, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore());
 

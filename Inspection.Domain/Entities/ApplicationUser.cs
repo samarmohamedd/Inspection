@@ -14,5 +14,6 @@ namespace Inspection.Domain.Entities
 
         // Navigation property to Inspector
         public virtual Inspector? Inspector { get; set; }
+
     }
 }

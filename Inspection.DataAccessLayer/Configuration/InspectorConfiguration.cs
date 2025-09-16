@@ -19,10 +19,7 @@ namespace Inspection.DataAccessLayer.Configuration
             builder.HasIndex(x => x.UserId)
                 .IsUnique();
 
-            builder.Property(x => x.RoleId)
-                .IsRequired()
-                .HasMaxLength(450); // Standard length for Identity RoleId
-
+            
             builder.Property(x => x.IsActive)
                 .IsRequired()
                 .HasDefaultValue(true);
@@ -42,11 +39,6 @@ namespace Inspection.DataAccessLayer.Configuration
             builder.HasOne(x => x.User)
                 .WithOne(x => x.Inspector)
                 .HasForeignKey<Inspector>(x => x.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasOne(x => x.Role)
-                .WithMany()
-                .HasForeignKey(x => x.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(x => x.InspectionVisits)

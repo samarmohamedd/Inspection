@@ -14,6 +14,7 @@ namespace Inspection.DataAccessLayer.Repository
         private IGenericRepository<InspectionVisit>? _inspectionVisits;
         private IGenericRepository<Violation>? _violations;
         private IGenericRepository<ApplicationUser>? _applicationUser;
+        private IGenericRepository<ApplicationRole>? _applicationRole;
 
         public UnitOfWork(InspectionDbContext context)
         {
@@ -34,6 +35,9 @@ namespace Inspection.DataAccessLayer.Repository
 
         public IGenericRepository<ApplicationUser> applicationUser =>
             _applicationUser ??= new GenericRepository<ApplicationUser>(_context);
+
+        public IGenericRepository<ApplicationRole> applicationRole =>
+            _applicationRole ??= new GenericRepository<ApplicationRole>(_context);
 
         public async Task<int> SaveChangesAsync()
         {

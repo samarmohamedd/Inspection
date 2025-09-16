@@ -21,7 +21,6 @@ namespace Inspection.Application.Features.Inspectors.Commands
         {
             var inspector = await _unitOfWork.Inspectors.GetAsQueryable()
                 .Include(x => x.User)
-                .Include(x => x.Role)
                 .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
             if (inspector == null)
             {
@@ -30,7 +29,6 @@ namespace Inspection.Application.Features.Inspectors.Commands
 
             // For now, only update Inspector-specific properties
             // User properties should be updated through Identity UserManager
-            inspector.RoleId = request.RoleId;
             inspector.IsActive = request.IsActive;
             inspector.UpdatedAt = DateTime.UtcNow;
 

@@ -281,11 +281,6 @@ namespace Inspection.DataAccessLayer.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -299,8 +294,6 @@ namespace Inspection.DataAccessLayer.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -480,19 +473,11 @@ namespace Inspection.DataAccessLayer.Migrations
 
             modelBuilder.Entity("Inspection.Domain.Entities.Inspector", b =>
                 {
-                    b.HasOne("Inspection.Domain.Entities.ApplicationRole", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Inspection.Domain.Entities.ApplicationUser", "User")
                         .WithOne("Inspector")
                         .HasForeignKey("Inspection.Domain.Entities.Inspector", "UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Role");
 
                     b.Navigation("User");
                 });

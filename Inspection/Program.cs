@@ -15,6 +15,7 @@ using Inspection.Application.Services;
 using Inspection.Application.Mappings;
 using Inspection.Application.Validators;
 using Inspection.Domain.Entities;
+using Inspection.Domain.Constants;
 using Inspection.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -227,7 +228,7 @@ using (var scope = app.Services.CreateScope())
 
 static async Task SeedRolesAsync(RoleManager<ApplicationRole> roleManager)
 {
-    var roles = new[] { "Admin", "Inspector" };
+    var roles = new[] { RoleConstants.Names.Admin, RoleConstants.Names.Inspector };
 
     foreach (var roleName in roles)
     {
