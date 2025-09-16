@@ -16,7 +16,6 @@ namespace Inspection.Application.Features.Inspectors.Commands
             FullName = createInspectorDto.FullName;
             Email = createInspectorDto.Email;
             Phone = createInspectorDto.Phone;
-            RoleId = createInspectorDto.RoleId;
             Password = createInspectorDto.Password;
         }
     }

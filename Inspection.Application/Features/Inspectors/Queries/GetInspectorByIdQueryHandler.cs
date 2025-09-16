@@ -1,7 +1,9 @@
-using MediatR;
 using AutoMapper;
+using AutoMapper.Internal;
 using Inspection.Application.Dto;
 using Inspection.DataAccessLayer.Repository;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Inspection.Application.Features.Inspectors.Queries
 {
@@ -18,7 +20,8 @@ namespace Inspection.Application.Features.Inspectors.Queries
 
         public async Task<InspectorDto?> Handle(GetInspectorByIdQuery request, CancellationToken cancellationToken)
         {
-            var inspector = await _unitOfWork.Inspectors.GetByIdAsync(request.Id);
+            var inspector = await _unitOfWork.Inspectors.GetAsQueryable()
+                .Include(a=>a.User).FirstOrDefaultAsync(a=> a.Id== request.Id);
             return inspector != null ? _mapper.Map<InspectorDto>(inspector) : null;
         }
     }

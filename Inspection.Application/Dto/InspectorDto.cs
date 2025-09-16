@@ -9,8 +9,6 @@ namespace Inspection.Application.Dto
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
-        public string RoleId { get; set; }
-        public string RoleName { get; set; } = string.Empty;
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
@@ -21,7 +19,6 @@ namespace Inspection.Application.Dto
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
-        public string RoleId { get; set; } 
         public string Password { get; set; } = string.Empty;
     }
 
@@ -30,7 +27,6 @@ namespace Inspection.Application.Dto
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
-        public string RoleId { get; set; } 
         public bool IsActive { get; set; }
     }
 

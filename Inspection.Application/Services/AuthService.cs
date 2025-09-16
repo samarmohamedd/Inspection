@@ -187,7 +187,8 @@ namespace Inspection.Application.Services
                 new Claim(ClaimTypes.NameIdentifier, user.UserId),
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim("RoleId", user.RoleId)
+                new Claim(ClaimTypes.Role, user.RoleName),
+                new Claim("RoleId", user.RoleId),
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

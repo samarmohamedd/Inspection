@@ -20,7 +20,12 @@ namespace Inspection.Application.Mappings
                 .ReverseMap();
 
             CreateMap<Inspector, InspectorDto>()
-                                .ReverseMap();
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.User.Phone))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.User.Id))
+                .ReverseMap()
+                .ForMember(dest => dest.User, opt => opt.Ignore()); // User is handled separately
 
             CreateMap<CreateInspectorDto, Inspector>()
                                                .ReverseMap();

@@ -1,9 +1,12 @@
+using System.Linq;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Inspection.Application.Abstractions;
 using Inspection.Application.Dto;
 using Inspection.DataAccessLayer.Repository;
 using Inspection.Domain.Entities;
+using Inspection.Domain.Constants;
 
 namespace Inspection.Application.Services
 {
@@ -11,13 +14,15 @@ namespace Inspection.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IAuthService _authService;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
 
-        public InspectorService(IUnitOfWork unitOfWork, IMapper mapper, IAuthService authService)
+        public InspectorService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _authService = authService;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         public async Task<IEnumerable<InspectorDto>> GetAllAsync()
@@ -26,7 +31,19 @@ namespace Inspection.Application.Services
                 .Include(x => x.User)
                 .OrderBy(x => x.User.FullName)
                 .ToListAsync();
-            return _mapper.Map<IEnumerable<InspectorDto>>(inspectors);
+
+            var inspectorDtos = _mapper.Map<IEnumerable<InspectorDto>>(inspectors);
+
+            // Populate role information for each inspector
+            var result = new List<InspectorDto>();
+            foreach (var dto in inspectorDtos)
+            {
+                var inspector = inspectors.First(i => i.Id == dto.Id);
+                var populatedDto = _mapper.Map<InspectorDto>(dto);
+                result.Add(populatedDto);
+            }
+
+            return result;
         }
 
         public async Task<InspectorDto?> GetByIdAsync(int id)
@@ -34,7 +51,12 @@ namespace Inspection.Application.Services
             var inspector = await _unitOfWork.Inspectors.GetAsQueryable()
                 .Include(x => x.User)
                 .FirstOrDefaultAsync(x => x.Id == id);
-            return inspector != null ? _mapper.Map<InspectorDto>(inspector) : null;
+
+            if (inspector == null)
+                return null;
+
+            var inspectorDto = _mapper.Map<InspectorDto>(inspector);
+            return inspectorDto;
         }
 
         public async Task<InspectorDto?> GetByEmailAsync(string email)
@@ -42,15 +64,74 @@ namespace Inspection.Application.Services
             var inspector = await _unitOfWork.Inspectors.GetAsQueryable()
                 .Include(x => x.User)
                 .FirstOrDefaultAsync(x => x.User.Email == email);
-            return inspector != null ? _mapper.Map<InspectorDto>(inspector) : null;
+
+            if (inspector == null)
+                return null;
+
+            var inspectorDto = _mapper.Map<InspectorDto>(inspector);
+            return inspectorDto;
         }
 
         public async Task CreateAsync(CreateInspectorDto createInspectorDto)
         {
-             var entity=_mapper.Map<Inspector>(createInspectorDto);
+            try
+            {
+                // Check if user already exists
+                var existingUser = await _userManager.FindByEmailAsync(createInspectorDto.Email);
+                if (existingUser != null)
+                {
+                    throw new InvalidOperationException("An account with this email address already exists.");
+                }
 
-            await _unitOfWork.Inspectors.AddAsync(entity);
-            await _unitOfWork.SaveChangesAsync();
+                // Always use Inspector role - find by name using constant
+                var role = await _roleManager.FindByNameAsync(RoleConstants.Names.Inspector);
+                if (role == null)
+                {
+                    throw new InvalidOperationException("Inspector role not found in the system. Please contact administrator.");
+                }
+
+                // Create ApplicationUser entity
+                var user = new ApplicationUser
+                {
+                    UserName = createInspectorDto.Email,
+                    Email = createInspectorDto.Email,
+                    FullName = createInspectorDto.FullName,
+                    Phone = createInspectorDto.Phone,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                // Create user through UserManager
+                var userResult = await _userManager.CreateAsync(user, createInspectorDto.Password);
+                if (!userResult.Succeeded)
+                {
+                    throw new InvalidOperationException($"Failed to create user: {string.Join(", ", userResult.Errors.Select(e => e.Description))}");
+                }
+
+                // Assign role to user
+                await _userManager.AddToRoleAsync(user, role.Name!);
+
+                // Create Inspector entity with the User's ID
+                var inspector = new Inspector
+                {
+                    UserId = user.Id, // Use the ID from the created user
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                // Add Inspector entity to database
+                await _unitOfWork.Inspectors.AddAsync(inspector);
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (InvalidOperationException)
+            {
+                // Re-throw business logic exceptions as-is
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Unable to create inspector. Please check your connection and try again.", ex);
+            }
         }
 
         public async Task<InspectorDto?> UpdateAsync(int id, UpdateInspectorDto updateInspectorDto)
@@ -65,13 +146,35 @@ namespace Inspection.Application.Services
 
             // Update Inspector properties
             inspector.IsActive = updateInspectorDto.IsActive;
+            inspector.UpdatedAt = DateTime.UtcNow;
 
-            // Note: User properties (FullName, Email, Phone) should be updated through Identity UserManager
-            // For now, we'll just update the Inspector-specific properties
+            // Update User properties through UserManager
+            var user = inspector.User;
+            user.FullName = updateInspectorDto.FullName;
+            user.Phone = updateInspectorDto.Phone;
+            user.UpdatedAt = DateTime.UtcNow;
 
+            // Update email if changed
+            if (user.Email != updateInspectorDto.Email)
+            {
+                user.Email = updateInspectorDto.Email;
+                user.UserName = updateInspectorDto.Email; // Keep UserName in sync with Email
+            }
+
+            // Update user through UserManager
+            var userUpdateResult = await _userManager.UpdateAsync(user);
+            if (!userUpdateResult.Succeeded)
+            {
+                throw new InvalidOperationException($"Failed to update user: {string.Join(", ", userUpdateResult.Errors.Select(e => e.Description))}");
+            }
+
+            // Role is always Inspector - no role updates needed
+
+            // Update Inspector entity
             await _unitOfWork.Inspectors.UpdateAsync(inspector);
             await _unitOfWork.SaveChangesAsync();
 
+            // Return updated inspector with populated role information
             return await GetByIdAsync(id);
         }
 
@@ -118,5 +221,5 @@ namespace Inspection.Application.Services
                 .Include(x => x.User)
                 .AnyAsync(x => x.User.Email == email);
         }
-    }
+   }
 }

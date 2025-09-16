@@ -18,7 +18,6 @@ namespace Inspection.Application.Features.Inspectors.Commands
             FullName = updateInspectorDto.FullName;
             Email = updateInspectorDto.Email;
             Phone = updateInspectorDto.Phone;
-            RoleId = updateInspectorDto.RoleId;
             IsActive = updateInspectorDto.IsActive;
         }
     }

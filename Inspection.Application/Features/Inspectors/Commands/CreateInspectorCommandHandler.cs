@@ -11,8 +11,6 @@ namespace Inspection.Application.Features.Inspectors.Commands
     public class CreateInspectorCommandHandler : IRequestHandler<CreateInspectorCommand>
     {
         private readonly IInspectorService _inspectorService;
-        private readonly IMapper _mapper;
-        private readonly IAuthService _authService;
 
         public CreateInspectorCommandHandler(IInspectorService inspectorService)
         {
@@ -21,7 +19,13 @@ namespace Inspection.Application.Features.Inspectors.Commands
 
         public async Task Handle(CreateInspectorCommand request, CancellationToken cancellationToken)
         {
-            //_inspectorService.CreateAsync(request);
+           await _inspectorService.CreateAsync(new CreateInspectorDto()
+           {
+               Email = request.Email,
+               FullName = request.FullName,
+               Password = request.Password,
+               Phone= request.Phone,    
+           });
         }
     }
 }
