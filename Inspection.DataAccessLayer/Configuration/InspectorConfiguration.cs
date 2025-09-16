@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Inspection.Domain.Entities;
-using Inspection.Domain.Enum;
 
 namespace Inspection.DataAccessLayer.Configuration
 {
@@ -13,28 +12,16 @@ namespace Inspection.DataAccessLayer.Configuration
 
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.FullName)
+            builder.Property(x => x.UserId)
                 .IsRequired()
-                .HasMaxLength(200);
+                .HasMaxLength(450); // Standard length for Identity UserId
 
-            builder.Property(x => x.Email)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            builder.HasIndex(x => x.Email)
+            builder.HasIndex(x => x.UserId)
                 .IsUnique();
 
-            builder.Property(x => x.Phone)
+            builder.Property(x => x.RoleId)
                 .IsRequired()
-                .HasMaxLength(20);
-
-            builder.Property(x => x.Role)
-                .IsRequired()
-                .HasConversion<int>();
-
-            builder.Property(x => x.PasswordHash)
-                .IsRequired()
-                .HasMaxLength(500);
+                .HasMaxLength(450); // Standard length for Identity RoleId
 
             builder.Property(x => x.IsActive)
                 .IsRequired()
@@ -52,6 +39,16 @@ namespace Inspection.DataAccessLayer.Configuration
                 .HasMaxLength(100);
 
             // Relationships
+            builder.HasOne(x => x.User)
+                .WithOne(x => x.Inspector)
+                .HasForeignKey<Inspector>(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(x => x.Role)
+                .WithMany()
+                .HasForeignKey(x => x.RoleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasMany(x => x.InspectionVisits)
                 .WithOne(x => x.Inspector)
                 .HasForeignKey(x => x.InspectorId)

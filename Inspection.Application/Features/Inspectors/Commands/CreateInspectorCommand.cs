@@ -1,15 +1,14 @@
 using MediatR;
 using Inspection.Application.Dto;
-using Inspection.Domain.Enum;
 
 namespace Inspection.Application.Features.Inspectors.Commands
 {
-    public class CreateInspectorCommand : IRequest<InspectorDto>
+    public class CreateInspectorCommand : IRequest
     {
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
-        public UserRole Role { get; set; }
+        public string RoleId { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
 
         public CreateInspectorCommand(CreateInspectorDto createInspectorDto)
@@ -17,7 +16,7 @@ namespace Inspection.Application.Features.Inspectors.Commands
             FullName = createInspectorDto.FullName;
             Email = createInspectorDto.Email;
             Phone = createInspectorDto.Phone;
-            Role = createInspectorDto.Role;
+            RoleId = createInspectorDto.RoleId;
             Password = createInspectorDto.Password;
         }
     }

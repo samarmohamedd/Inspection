@@ -77,24 +77,21 @@ namespace Inspection.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<InspectorDto>> Create([FromBody] CreateInspectorDto createInspectorDto)
+        public async Task Create([FromBody] CreateInspectorDto createInspectorDto)
         {
             try
             {
                 var command = new CreateInspectorCommand(createInspectorDto);
-                var inspector = await _mediator.Send(command);
+                 await _mediator.Send(command);
                 _logger.LogInformation("Inspector created: {Email}", createInspectorDto.Email);
-                return CreatedAtAction(nameof(GetById), new { id = inspector.Id }, inspector);
             }
             catch (InvalidOperationException ex)
             {
                 _logger.LogWarning("Failed to create inspector {Email}: {Message}", createInspectorDto.Email, ex.Message);
-                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating inspector {Email}", createInspectorDto.Email);
-                return StatusCode(500, new { message = "An error occurred while creating the inspector" });
             }
         }
 

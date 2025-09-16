@@ -23,54 +23,57 @@ namespace Inspection.Application.Services
         public async Task<IEnumerable<InspectorDto>> GetAllAsync()
         {
             var inspectors = await _unitOfWork.Inspectors.GetAsQueryable()
-                .OrderBy(x => x.FullName)
+                .Include(x => x.User)
+                .Include(x => x.Role)
+                .OrderBy(x => x.User.FullName)
                 .ToListAsync();
             return _mapper.Map<IEnumerable<InspectorDto>>(inspectors);
         }
 
         public async Task<InspectorDto?> GetByIdAsync(int id)
         {
-            var inspector = await _unitOfWork.Inspectors.FindAsync(id);
+            var inspector = await _unitOfWork.Inspectors.GetAsQueryable()
+                .Include(x => x.User)
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(x => x.Id == id);
             return inspector != null ? _mapper.Map<InspectorDto>(inspector) : null;
         }
 
         public async Task<InspectorDto?> GetByEmailAsync(string email)
         {
             var inspector = await _unitOfWork.Inspectors.GetAsQueryable()
-                .FirstOrDefaultAsync(x => x.Email == email);
+                .Include(x => x.User)
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(x => x.User.Email == email);
             return inspector != null ? _mapper.Map<InspectorDto>(inspector) : null;
         }
 
-        public async Task<InspectorDto> CreateAsync(CreateInspectorDto createInspectorDto)
+        public async Task CreateAsync(CreateInspectorDto createInspectorDto)
         {
-            if (await EmailExistsAsync(createInspectorDto.Email))
-            {
-                throw new InvalidOperationException("Email already exists");
-            }
+             var entity=_mapper.Map<Inspector>(createInspectorDto);
 
-            var inspector = _mapper.Map<Inspector>(createInspectorDto);
-            inspector.PasswordHash = _authService.HashPassword(createInspectorDto.Password);
-
-            await _unitOfWork.Inspectors.AddAsync(inspector);
+            await _unitOfWork.Inspectors.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
-
-            return await GetByIdAsync(inspector.Id) ?? throw new InvalidOperationException("Failed to retrieve created inspector");
         }
 
         public async Task<InspectorDto?> UpdateAsync(int id, UpdateInspectorDto updateInspectorDto)
         {
-            var inspector = await _unitOfWork.Inspectors.FindAsync(id);
+            var inspector = await _unitOfWork.Inspectors.GetAsQueryable()
+                .Include(x => x.User)
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(x => x.Id == id);
             if (inspector == null)
             {
                 return null;
             }
 
-            if (await EmailExistsAsync(updateInspectorDto.Email, id))
-            {
-                throw new InvalidOperationException("Email already exists");
-            }
+            // Update Inspector properties
+            inspector.RoleId = updateInspectorDto.RoleId;
+            inspector.IsActive = updateInspectorDto.IsActive;
 
-            _mapper.Map(updateInspectorDto, inspector);
+            // Note: User properties (FullName, Email, Phone) should be updated through Identity UserManager
+            // For now, we'll just update the Inspector-specific properties
+
             await _unitOfWork.Inspectors.UpdateAsync(inspector);
             await _unitOfWork.SaveChangesAsync();
 
@@ -112,9 +115,13 @@ namespace Inspection.Application.Services
         {
             if (excludeId.HasValue)
             {
-                return await _unitOfWork.Inspectors.GetAsQueryable().AnyAsync(x => x.Email == email && x.Id != excludeId.Value);
+                return await _unitOfWork.Inspectors.GetAsQueryable()
+                    .Include(x => x.User)
+                    .AnyAsync(x => x.User.Email == email && x.Id != excludeId.Value);
             }
-            return await _unitOfWork.Inspectors.GetAsQueryable().AnyAsync(x => x.Email == email);
+            return await _unitOfWork.Inspectors.GetAsQueryable()
+                .Include(x => x.User)
+                .AnyAsync(x => x.User.Email == email);
         }
     }
 }

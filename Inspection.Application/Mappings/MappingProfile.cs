@@ -8,13 +8,26 @@ namespace Inspection.Application.Mappings
     {
         public MappingProfile()
         {
-            // Inspector mappings
-            CreateMap<Inspector, InspectorDto>();
+            // User mappings
+
+            CreateMap<UserDto, ApplicationUser>()
+                .ReverseMap();
+            CreateMap<CreateUserDto, ApplicationUser>()
+                .ReverseMap();
+            CreateMap<UpdateUserDto, ApplicationUser>()
+                .ReverseMap();
+
+            CreateMap<Inspector, InspectorDto>()
+                                .ReverseMap();
+
             CreateMap<CreateInspectorDto, Inspector>()
-                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
+                                               .ReverseMap();
+
             CreateMap<UpdateInspectorDto, Inspector>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.Role, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore());
 
@@ -47,7 +60,7 @@ namespace Inspection.Application.Mappings
             // Recent visit mapping
             CreateMap<InspectionVisit, RecentVisitDto>()
                 .ForMember(dest => dest.EntityName, opt => opt.MapFrom(src => src.EntityToInspect.Name))
-                .ForMember(dest => dest.InspectorName, opt => opt.MapFrom(src => src.Inspector.FullName));
+                .ForMember(dest => dest.InspectorName, opt => opt.MapFrom(src => src.Inspector.User.FullName));
         }
     }
 }

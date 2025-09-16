@@ -1,6 +1,5 @@
 using MediatR;
 using Inspection.Application.Dto;
-using Inspection.Domain.Enum;
 
 namespace Inspection.Application.Features.Inspectors.Commands
 {
@@ -10,7 +9,7 @@ namespace Inspection.Application.Features.Inspectors.Commands
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
-        public UserRole Role { get; set; }
+        public string RoleId { get; set; } = string.Empty;
         public bool IsActive { get; set; }
 
         public UpdateInspectorCommand(int id, UpdateInspectorDto updateInspectorDto)
@@ -19,7 +18,7 @@ namespace Inspection.Application.Features.Inspectors.Commands
             FullName = updateInspectorDto.FullName;
             Email = updateInspectorDto.Email;
             Phone = updateInspectorDto.Phone;
-            Role = updateInspectorDto.Role;
+            RoleId = updateInspectorDto.RoleId;
             IsActive = updateInspectorDto.IsActive;
         }
     }

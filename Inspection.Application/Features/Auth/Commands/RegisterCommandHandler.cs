@@ -8,7 +8,7 @@ using Inspection.Domain.Entities;
 
 namespace Inspection.Application.Features.Auth.Commands
 {
-    public class RegisterCommandHandler : IRequestHandler<RegisterCommand, InspectorDto>
+    public class RegisterCommandHandler : IRequestHandler<RegisterCommand, UserDto>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -21,30 +21,18 @@ namespace Inspection.Application.Features.Auth.Commands
             _authService = authService;
         }
 
-        public async Task<InspectorDto> Handle(RegisterCommand request, CancellationToken cancellationToken)
+        public async Task<UserDto> Handle(RegisterCommand request, CancellationToken cancellationToken)
         {
-            var existingInspector = await _unitOfWork.Inspectors.GetAsQueryable()
-                .FirstOrDefaultAsync(x => x.Email == request.Email, cancellationToken);
-            
-            if (existingInspector != null)
-            {
-                throw new InvalidOperationException("Email already exists");
-            }
-
-            var inspector = new Inspector
+            var createUserDto = new CreateUserDto
             {
                 FullName = request.FullName,
                 Email = request.Email,
                 Phone = request.Phone,
-                Role = request.Role,
-                PasswordHash = _authService.HashPassword(request.Password),
-                IsActive = true
+                RoleId = request.RoleId,
+                Password = request.Password
             };
 
-            await _unitOfWork.Inspectors.AddAsync(inspector);
-            await _unitOfWork.SaveChangesAsync();
-
-            return _mapper.Map<InspectorDto>(inspector);
+            return await _authService.RegisterAsync(createUserDto);
         }
     }
 }

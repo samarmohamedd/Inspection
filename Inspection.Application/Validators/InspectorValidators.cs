@@ -1,6 +1,5 @@
 using FluentValidation;
 using Inspection.Application.Dto;
-using Inspection.Domain.Enum;
 
 namespace Inspection.Application.Validators
 {
@@ -21,12 +20,12 @@ namespace Inspection.Application.Validators
                 .NotEmpty().WithMessage("Phone is required")
                 .MaximumLength(20).WithMessage("Phone cannot exceed 20 characters");
 
-            RuleFor(x => x.Role)
-                .IsInEnum().WithMessage("Invalid role");
-
+           
             RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("Password is required")
-                .MinimumLength(6).WithMessage("Password must be at least 6 characters");
+                .MinimumLength(6).WithMessage("Password must be at least 6 characters")
+                .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$")
+                .WithMessage("Password must contain at least one lowercase letter, one uppercase letter, and one digit");
         }
     }
 
@@ -47,9 +46,7 @@ namespace Inspection.Application.Validators
                 .NotEmpty().WithMessage("Phone is required")
                 .MaximumLength(20).WithMessage("Phone cannot exceed 20 characters");
 
-            RuleFor(x => x.Role)
-                .IsInEnum().WithMessage("Invalid role");
-        }
+           }
     }
 
     public class LoginDtoValidator : AbstractValidator<LoginDto>

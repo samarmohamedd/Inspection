@@ -69,13 +69,14 @@ namespace Inspection.Application.Features.InspectionVisits.Queries
             var recentVisits = await _unitOfWork.InspectionVisits.GetAsQueryable()
                 .Include(v => v.EntityToInspect)
                 .Include(v => v.Inspector)
+                    .ThenInclude(i => i.User)
                 .OrderByDescending(v => v.CreatedAt)
                 .Take(10)
                 .Select(v => new RecentVisitDto
                 {
                     Id = v.Id,
                     EntityName = v.EntityToInspect.Name,
-                    InspectorName = v.Inspector.FullName,
+                    InspectorName = v.Inspector.User.FullName,
                     ScheduledAt = v.ScheduledAt,
                     Status = v.Status,
                     Score = v.Score

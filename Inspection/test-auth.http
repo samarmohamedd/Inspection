@@ -1,0 +1,119 @@
+### Test Authentication Endpoints
+
+### 1. Get Available Roles
+GET https://localhost:7001/api/auth/roles
+Content-Type: application/json
+
+###
+
+### 2. Register a new user (Admin)
+POST https://localhost:7001/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Test Admin",
+  "email": "admin@test.com",
+  "phone": "1234567890",
+  "roleId": "admin-role-id-here",
+  "password": "TestPass123"
+}
+
+###
+
+### 3. Register a new user (Inspector)
+POST https://localhost:7001/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Test Inspector",
+  "email": "inspector@test.com",
+  "phone": "0987654321",
+  "roleId": "inspector-role-id-here",
+  "password": "TestPass123"
+}
+
+###
+
+### 4. Login with valid credentials
+POST https://localhost:7001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "TestPass123"
+}
+
+###
+
+### 5. Login with invalid email
+POST https://localhost:7001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@test.com",
+  "password": "TestPass123"
+}
+
+###
+
+### 6. Login with invalid password
+POST https://localhost:7001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "WrongPassword"
+}
+
+###
+
+### 7. Register with existing email (should fail)
+POST https://localhost:7001/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Another User",
+  "email": "admin@test.com",
+  "phone": "1111111111",
+  "roleId": "inspector-role-id-here",
+  "password": "TestPass123"
+}
+
+###
+
+### 8. Register with weak password (should fail)
+POST https://localhost:7001/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Weak Password User",
+  "email": "weak@test.com",
+  "phone": "2222222222",
+  "roleId": "inspector-role-id-here",
+  "password": "weak"
+}
+
+###
+
+### 9. Register with invalid email format (should fail)
+POST https://localhost:7001/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Invalid Email User",
+  "email": "invalid-email",
+  "phone": "3333333333",
+  "roleId": "inspector-role-id-here",
+  "password": "TestPass123"
+}
+
+###
+
+### 10. Login with empty fields (should fail)
+POST https://localhost:7001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": ""
+}

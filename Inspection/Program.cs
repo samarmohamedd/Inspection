@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -13,6 +14,8 @@ using Inspection.Application.Abstractions;
 using Inspection.Application.Services;
 using Inspection.Application.Mappings;
 using Inspection.Application.Validators;
+using Inspection.Domain.Entities;
+using Inspection.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +41,29 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
 // Add Entity Framework
 builder.Services.AddDbContext<InspectionDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add ASP.NET Core Identity
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+{
+    // Password settings
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequiredUniqueChars = 1;
+
+    // Lockout settings
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers = true;
+
+    // User settings
+    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+    options.User.RequireUniqueEmail = true;
+})
+.AddEntityFrameworkStores<InspectionDbContext>()
+.AddDefaultTokenProviders();
 
 // Add repositories
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -144,6 +170,9 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// Add global exception handling middleware
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+
 // Add Serilog request logging
 app.UseSerilogRequestLogging(options =>
 {
@@ -184,11 +213,36 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Ensure database is created
+// Ensure database is created and seed roles
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<InspectionDbContext>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
+
     context.Database.EnsureCreated();
+
+    // Seed roles
+    await SeedRolesAsync(roleManager);
+}
+
+static async Task SeedRolesAsync(RoleManager<ApplicationRole> roleManager)
+{
+    var roles = new[] { "Admin", "Inspector" };
+
+    foreach (var roleName in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(roleName))
+        {
+            var role = new ApplicationRole
+            {
+                Name = roleName,
+                NormalizedName = roleName.ToUpper(),
+                Description = $"{roleName} role for the inspection system",
+                CreatedAt = DateTime.UtcNow
+            };
+            await roleManager.CreateAsync(role);
+        }
+    }
 }
 
 try

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Inspection.Application.Dto;
 using Inspection.Application.Features.Auth.Commands;
+using Inspection.Domain.Entities;
 
 namespace Inspection.Controllers
 {
@@ -11,11 +13,13 @@ namespace Inspection.Controllers
     {
         private readonly IMediator _mediator;
         private readonly ILogger<AuthController> _logger;
+        private readonly RoleManager<ApplicationRole> _roleManager;
 
-        public AuthController(IMediator mediator, ILogger<AuthController> logger)
+        public AuthController(IMediator mediator, ILogger<AuthController> logger, RoleManager<ApplicationRole> roleManager)
         {
             _mediator = mediator;
             _logger = logger;
+            _roleManager = roleManager;
         }
 
         [HttpPost("login")]
@@ -26,37 +30,72 @@ namespace Inspection.Controllers
                 var command = new LoginCommand(loginDto);
                 var result = await _mediator.Send(command);
 
-                _logger.LogInformation("User {Email} logged in successfully in {ElapsedMs}ms",
+                _logger.LogInformation("User {Email} logged in successfully",
                     loginDto.Email);
 
                 return Ok(result);
-            } 
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning("Login failed for {Email}: {Message}", loginDto.Email, ex.Message);
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning("Login failed for {Email}: {Message}", loginDto.Email, ex.Message);
+                return BadRequest(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during login for {Email} from IP {ClientIP} after {ElapsedMs}ms",
+                _logger.LogError(ex, "Unexpected error during login for {Email} from IP {ClientIP}",
                     loginDto.Email, HttpContext.Connection.RemoteIpAddress?.ToString());
-                return StatusCode(500, new { message = "An error occurred during login" });
+                return StatusCode(500, new { message = "An unexpected error occurred during login. Please try again later." });
             }
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<InspectorDto>> Register([FromBody] CreateInspectorDto createInspectorDto)
+        public async Task<ActionResult<InspectorDto>> Register([FromBody] CreateUserDto createUserDto)
         {
             try
             {
-                var command = new RegisterCommand(createInspectorDto);
+                var command = new RegisterCommand(createUserDto);
                 var result = await _mediator.Send(command);
 
-                _logger.LogInformation("New user registered successfully: {Email} with ID {UserId} and role {Role} in {ElapsedMs}ms",
-                    createInspectorDto.Email, result.Id, createInspectorDto.Role);
-
-                return CreatedAtAction(nameof(Register), new { id = result.Id }, result);
-            } 
+                          return CreatedAtAction(nameof(Register), new { id = result.Id }, result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning("Registration failed for {Email}: {Message}", createUserDto.Email, ex.Message);
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning("Registration failed for {Email}: {Message}", createUserDto.Email, ex.Message);
+                return BadRequest(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during registration for {Email} with role {Role} after {ElapsedMs}ms",
-                    createInspectorDto.Email, createInspectorDto.Role);
-                return StatusCode(500, new { message = "An error occurred during registration" });
+                _logger.LogError(ex, "Unexpected error during registration for {Email} with role {RoleId}",
+                    createUserDto.Email, createUserDto.RoleId);
+                return StatusCode(500, new { message = "An unexpected error occurred during registration. Please try again later." });
+            }
+        }
+
+        [HttpGet("roles")]
+        public async Task<ActionResult<IEnumerable<object>>> GetRoles()
+        {
+            try
+            {
+                var roles = _roleManager.Roles
+                    .Select(r => new { id = r.Id, name = r.Name, description = r.Description })
+                    .ToList();
+
+                return Ok(roles);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving roles");
+                return StatusCode(500, new { message = "An error occurred while retrieving roles" });
             }
         }
     }

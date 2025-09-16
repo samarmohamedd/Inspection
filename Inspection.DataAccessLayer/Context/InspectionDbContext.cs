@@ -1,10 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Inspection.Domain.Entities;
 using Inspection.DataAccessLayer.Configuration;
 
 namespace Inspection.DataAccessLayer.Context
 {
-    public class InspectionDbContext : DbContext
+    public class InspectionDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
     {
         public InspectionDbContext(DbContextOptions<InspectionDbContext> options) : base(options)
         {
@@ -20,6 +21,8 @@ namespace Inspection.DataAccessLayer.Context
             base.OnModelCreating(modelBuilder);
 
             // Apply configurations
+            modelBuilder.ApplyConfiguration(new ApplicationUserConfiguration());
+            modelBuilder.ApplyConfiguration(new ApplicationRoleConfiguration());
             modelBuilder.ApplyConfiguration(new InspectorConfiguration());
             modelBuilder.ApplyConfiguration(new EntityToInspectConfiguration());
             modelBuilder.ApplyConfiguration(new InspectionVisitConfiguration());

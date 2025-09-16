@@ -8,43 +8,20 @@ using Inspection.Domain.Entities;
 
 namespace Inspection.Application.Features.Inspectors.Commands
 {
-    public class CreateInspectorCommandHandler : IRequestHandler<CreateInspectorCommand, InspectorDto>
+    public class CreateInspectorCommandHandler : IRequestHandler<CreateInspectorCommand>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IInspectorService _inspectorService;
         private readonly IMapper _mapper;
         private readonly IAuthService _authService;
 
-        public CreateInspectorCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IAuthService authService)
+        public CreateInspectorCommandHandler(IInspectorService inspectorService)
         {
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
-            _authService = authService;
+            _inspectorService = inspectorService;
         }
 
-        public async Task<InspectorDto> Handle(CreateInspectorCommand request, CancellationToken cancellationToken)
+        public async Task Handle(CreateInspectorCommand request, CancellationToken cancellationToken)
         {
-            var existingInspector = await _unitOfWork.Inspectors.GetAsQueryable()
-                .FirstOrDefaultAsync(x => x.Email == request.Email, cancellationToken);
-            
-            if (existingInspector != null)
-            {
-                throw new InvalidOperationException("Email already exists");
-            }
-
-            var inspector = new Inspector
-            {
-                FullName = request.FullName,
-                Email = request.Email,
-                Phone = request.Phone,
-                Role = request.Role,
-                PasswordHash = _authService.HashPassword(request.Password),
-                IsActive = true
-            };
-
-            await _unitOfWork.Inspectors.AddAsync(inspector);
-            await _unitOfWork.SaveChangesAsync();
-
-            return _mapper.Map<InspectorDto>(inspector);
+            //_inspectorService.CreateAsync(request);
         }
     }
 }

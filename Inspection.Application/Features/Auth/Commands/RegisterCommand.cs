@@ -1,24 +1,23 @@
 using MediatR;
 using Inspection.Application.Dto;
-using Inspection.Domain.Enum;
 
 namespace Inspection.Application.Features.Auth.Commands
 {
-    public class RegisterCommand : IRequest<InspectorDto>
+    public class RegisterCommand : IRequest<UserDto>
     {
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
-        public UserRole Role { get; set; }
+        public string RoleId { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
 
-        public RegisterCommand(CreateInspectorDto createInspectorDto)
+        public RegisterCommand(CreateUserDto createUserDto)
         {
-            FullName = createInspectorDto.FullName;
-            Email = createInspectorDto.Email;
-            Phone = createInspectorDto.Phone;
-            Role = createInspectorDto.Role;
-            Password = createInspectorDto.Password;
+            FullName = createUserDto.FullName;
+            Email = createUserDto.Email;
+            Phone = createUserDto.Phone;
+            Password = createUserDto.Password;
+            RoleId = createUserDto.RoleId;
         }
     }
 }
