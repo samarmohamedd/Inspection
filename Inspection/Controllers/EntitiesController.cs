@@ -82,7 +82,6 @@ namespace Inspection.Controllers
             {
                 var command = new CreateEntityCommand(createEntityDto);
                 var entity = await _mediator.Send(command);
-                _logger.LogInformation("Entity created: {Name}", createEntityDto.Name);
                 return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
             }
             catch (Exception ex)
@@ -104,7 +103,6 @@ namespace Inspection.Controllers
                 {
                     return NotFound(new { message = "Entity not found" });
                 }
-                _logger.LogInformation("Entity updated: {Id}", id);
                 return Ok(entity);
             }
             catch (Exception ex)
@@ -126,7 +124,6 @@ namespace Inspection.Controllers
                 {
                     return NotFound(new { message = "Entity not found" });
                 }
-                _logger.LogInformation("Entity deleted: {Id}", id);
                 return NoContent();
             }
             catch (Exception ex)

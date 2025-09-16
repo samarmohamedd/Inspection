@@ -85,14 +85,8 @@ namespace Inspection.Controllers
             {
                 var command = new CreateVisitCommand(createVisitDto);
                 var visit = await _mediator.Send(command);
-                _logger.LogInformation("Inspection visit created: {Id}", visit.Id);
                 return CreatedAtAction(nameof(GetById), new { id = visit.Id }, visit);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning("Failed to create inspection visit: {Message}", ex.Message);
-                return BadRequest(new { message = ex.Message });
-            }
+            } 
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating inspection visit");
@@ -123,14 +117,8 @@ namespace Inspection.Controllers
                 {
                     return NotFound(new { message = "Inspection visit not found" });
                 }
-                _logger.LogInformation("Inspection visit updated: {Id}", id);
                 return Ok(visit);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning("Failed to update inspection visit {Id}: {Message}", id, ex.Message);
-                return BadRequest(new { message = ex.Message });
-            }
+            } 
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating inspection visit {Id}", id);
@@ -161,14 +149,8 @@ namespace Inspection.Controllers
                 {
                     return NotFound(new { message = "Inspection visit not found" });
                 }
-                _logger.LogInformation("Inspection visit completed: {Id}", id);
                 return Ok(visit);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning("Failed to complete inspection visit {Id}: {Message}", id, ex.Message);
-                return BadRequest(new { message = ex.Message });
-            }
+            } 
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error completing inspection visit {Id}", id);
@@ -188,14 +170,8 @@ namespace Inspection.Controllers
                 {
                     return NotFound(new { message = "Inspection visit not found" });
                 }
-                _logger.LogInformation("Inspection visit deleted: {Id}", id);
                 return NoContent();
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning("Failed to delete inspection visit {Id}: {Message}", id, ex.Message);
-                return BadRequest(new { message = ex.Message });
-            }
+            } 
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting inspection visit {Id}", id); 

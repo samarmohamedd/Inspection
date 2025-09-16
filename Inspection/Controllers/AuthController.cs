@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 using Inspection.Application.Dto;
 using Inspection.Application.Features.Auth.Commands;
-using Inspection.Domain.Entities;
+using Inspection.Application.Features.Auth.Queries;
 
 namespace Inspection.Controllers
 {
@@ -13,13 +12,11 @@ namespace Inspection.Controllers
     {
         private readonly IMediator _mediator;
         private readonly ILogger<AuthController> _logger;
-        private readonly RoleManager<ApplicationRole> _roleManager;
 
-        public AuthController(IMediator mediator, ILogger<AuthController> logger, RoleManager<ApplicationRole> roleManager)
+        public AuthController(IMediator mediator, ILogger<AuthController> logger)
         {
             _mediator = mediator;
             _logger = logger;
-            _roleManager = roleManager;
         }
 
         [HttpPost("login")]
@@ -27,24 +24,9 @@ namespace Inspection.Controllers
         {
             try
             {
-                var command = new LoginCommand(loginDto);
-                var result = await _mediator.Send(command);
-
-                _logger.LogInformation("User {Email} logged in successfully",
-                    loginDto.Email);
-
+                var result = await _mediator.Send(new LoginCommand(loginDto));
                 return Ok(result);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.LogWarning("Login failed for {Email}: {Message}", loginDto.Email, ex.Message);
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning("Login failed for {Email}: {Message}", loginDto.Email, ex.Message);
-                return BadRequest(new { message = ex.Message });
-            }
+            } 
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error during login for {Email} from IP {ClientIP}",
@@ -58,21 +40,9 @@ namespace Inspection.Controllers
         {
             try
             {
-                var command = new RegisterCommand(createUserDto);
-                var result = await _mediator.Send(command);
-
-                          return CreatedAtAction(nameof(Register), new { id = result.Id }, result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning("Registration failed for {Email}: {Message}", createUserDto.Email, ex.Message);
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning("Registration failed for {Email}: {Message}", createUserDto.Email, ex.Message);
-                return BadRequest(new { message = ex.Message });
-            }
+                var result = await _mediator.Send(new RegisterCommand(createUserDto));
+               return Ok(result);
+            } 
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error during registration for {Email} with role {RoleId}",
@@ -82,14 +52,12 @@ namespace Inspection.Controllers
         }
 
         [HttpGet("roles")]
-        public async Task<ActionResult<IEnumerable<object>>> GetRoles()
+        public async Task<ActionResult<IEnumerable<RoleDto>>> GetRoles()
         {
             try
             {
-                var roles = _roleManager.Roles
-                    .Select(r => new { id = r.Id, name = r.Name, description = r.Description })
-                    .ToList();
-
+                var query = new GetRolesQuery();
+                var roles = await _mediator.Send(query);
                 return Ok(roles);
             }
             catch (Exception ex)

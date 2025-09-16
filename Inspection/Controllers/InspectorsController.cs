@@ -26,16 +26,10 @@ namespace Inspection.Controllers
         public async Task<ActionResult<IEnumerable<InspectorDto>>> GetAll()
         {
             var currentUser = User.Identity?.Name ?? "Unknown";
-
-
             try
             {
                 var query = new GetAllInspectorsQuery();
                 var inspectors = await _mediator.Send(query);
-
-                _logger.LogInformation("Successfully retrieved {InspectorCount} inspectors for admin {AdminUser} in {ElapsedMs}ms",
-                    inspectors.Count(), currentUser);
-
                 return Ok(inspectors);
             }
             catch (Exception ex)
@@ -56,15 +50,9 @@ namespace Inspection.Controllers
                 var inspector = await _mediator.Send(query);
 
                 if (inspector == null)
-                {
-                    _logger.LogWarning("Inspector {InspectorId} not found for user {CurrentUser} after {ElapsedMs}ms",
-                        id, currentUser);
+                { 
                     return NotFound(new { message = "Inspector not found" });
                 }
-
-                _logger.LogInformation("Successfully retrieved inspector {InspectorId} ({InspectorEmail}) for user {CurrentUser} in {ElapsedMs}ms",
-                    id, inspector.Email, currentUser);
-
                 return Ok(inspector);
             }
             catch (Exception ex)
@@ -83,12 +71,7 @@ namespace Inspection.Controllers
             {
                 var command = new CreateInspectorCommand(createInspectorDto);
                  await _mediator.Send(command);
-                _logger.LogInformation("Inspector created: {Email}", createInspectorDto.Email);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning("Failed to create inspector {Email}: {Message}", createInspectorDto.Email, ex.Message);
-            }
+            } 
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating inspector {Email}", createInspectorDto.Email);
@@ -107,14 +90,8 @@ namespace Inspection.Controllers
                 {
                     return NotFound(new { message = "Inspector not found" });
                 }
-                _logger.LogInformation("Inspector updated: {Id}", id);
                 return Ok(inspector);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning("Failed to update inspector {Id}: {Message}", id, ex.Message);
-                return BadRequest(new { message = ex.Message });
-            }
+            } 
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating inspector {Id}", id);
@@ -134,7 +111,6 @@ namespace Inspection.Controllers
                 {
                     return NotFound(new { message = "Inspector not found" });
                 }
-                _logger.LogInformation("Inspector deleted: {Id}", id);
                 return NoContent();
             }
             catch (Exception ex)

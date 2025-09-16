@@ -17,6 +17,9 @@ namespace Inspection.Application.Mappings
             CreateMap<UpdateUserDto, ApplicationUser>()
                 .ReverseMap();
 
+            CreateMap<ApplicationRole, RoleDto>()
+                .ReverseMap();
+
             CreateMap<Inspector, InspectorDto>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
