@@ -58,16 +58,6 @@ namespace Inspection.Controllers
                     return NotFound(new { message = "Inspection visit not found" });
                 }
 
-                var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-                if (userRole == UserRole.Inspector.ToString())
-                {
-                    var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-                    if (visit.InspectorId != userId)
-                    {
-                        return Forbid();
-                    }
-                }
-
                 return Ok(visit);
             }
             catch (Exception ex)
@@ -100,17 +90,6 @@ namespace Inspection.Controllers
             try
             {
                 var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-                if (userRole == UserRole.Inspector.ToString())
-                {
-                    var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-                    var getQuery = new GetVisitByIdQuery(id);
-                    var existingVisit = await _mediator.Send(getQuery);
-                    if (existingVisit?.InspectorId != userId)
-                    {
-                        return Forbid();
-                    }
-                }
-
                 var command = new UpdateVisitCommand(id, updateVisitDto);
                 var visit = await _mediator.Send(command);
                 if (visit == null)
@@ -132,17 +111,6 @@ namespace Inspection.Controllers
             try
             {
                 var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-                if (userRole == UserRole.Inspector.ToString())
-                {
-                    var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-                    var getQuery = new GetVisitByIdQuery(id);
-                    var existingVisit = await _mediator.Send(getQuery);
-                    if (existingVisit?.InspectorId != userId)
-                    {
-                        return Forbid();
-                    }
-                }
-
                 var command = new CompleteVisitCommand(id, completeVisitDto);
                 var visit = await _mediator.Send(command);
                 if (visit == null)
@@ -185,7 +153,7 @@ namespace Inspection.Controllers
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string. Empty;
                 var query = new GetMyVisitsQuery(userId);
                 var visits = await _mediator.Send(query);
                 return Ok(visits);

@@ -5,11 +5,11 @@ namespace Inspection.Application.Features.InspectionVisits.Queries
 {
     public record GetMyVisitsQuery : IRequest<IEnumerable<InspectionVisitDto>>
     {
-        public int InspectorId { get; set; }
+        public string UserId { get; set; }
 
-        public GetMyVisitsQuery(int inspectorId)
+        public GetMyVisitsQuery(string userId)
         {
-            InspectorId = inspectorId;
+            UserId = userId;
         }
     }
 }
